@@ -7,10 +7,9 @@ const resizeMiddleware = (fastify, _, done) => {
   fastify.get("/:filename", {}, async (request, reply) => {
     const { filename } = request.params;
     if (!filename) {
-      reply
+      return reply
         .code(StatusCodes.NOT_MODIFIED)
         .send({ msg: "No filename provided" });
-      return;
     }
 
     try {
