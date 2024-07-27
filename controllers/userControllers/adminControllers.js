@@ -60,7 +60,9 @@ const getAllUsers = asyncWrapper(async (req, res) => {
 const getUserById = asyncWrapper(async (req, res) => {
   if (req.user.typeofuser === "admin") {
     const { id } = req.params;
-    const user = await User.findById(id).select("-password -__v").lean();
+    const user = await User.findById(id)
+      .select("-password -__v -address")
+      .lean();
     if (!user) {
       return res
         .code(StatusCodes.PARTIAL_CONTENT)
@@ -86,7 +88,9 @@ const patchUserById = asyncWrapper(async (req, res) => {
     {
       new: true,
     }
-  );
+  )
+    .select("-password -__v -address")
+    .lean();
   if (!user) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
@@ -144,7 +148,9 @@ const updateUserById = asyncWrapper(async (req, res) => {
       new: true,
       runValidators: true,
     }
-  );
+  )
+    .select("-password -__v -address")
+    .lean();
   if (!user) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
