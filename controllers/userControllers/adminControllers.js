@@ -74,26 +74,26 @@ const getUserById = asyncWrapper(async (req, res) => {
 });
 
 const patchUserById = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser === "admin") {
-    const { id } = req.params;
-    const user = await User.findByIdAndUpdate(
-      id,
-      { isApproved: true },
-      {
-        new: true,
-      }
-    );
-    if (!user) {
-      return res
-        .code(StatusCodes.PARTIAL_CONTENT)
-        .send({ msg: "User not found. Please check again." });
-    }
-    // myCache.del("users");
-    return res.code(StatusCodes.OK).send({ user });
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
+      .send({ msg: "You are not authorized to perform this action." });
   }
-  res
-    .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
-    .send({ msg: "You are not authorized to perform this action." });
+  const { id } = req.params;
+  const user = await User.findByIdAndUpdate(
+    id,
+    { isApproved: true },
+    {
+      new: true,
+    }
+  );
+  if (!user) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "User not found. Please check again." });
+  }
+  // myCache.del("users");
+  return res.code(StatusCodes.OK).send({ user });
 });
 
 const patchAll = asyncWrapper(async (req, res) => {
