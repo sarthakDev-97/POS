@@ -316,30 +316,26 @@ const deleteProduct = asyncWrapper(async (req, res) => {
 });
 
 const addMultipleProducts = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser !== "admin") {
-    return res
-      .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
-      .send({ msg: "You are not authorized to perform this action." });
-  }
+  // if (req.user.typeofuser !== "admin") {
+  //   return res
+  //     .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
+  //     .send({ msg: "You are not authorized to perform this action." });
+  // }
   const { data } = req.body;
   let productsData = [];
   for (let item of data) {
     let sku = null;
+    const product = await Product.findOne({
+      name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
+      color: item?.color,
+      productType: item.productType,
+    });
     sku =
-      item?.sku?.trim() === "" || null || !item.sku
-        ? function () {
-            const product = Product.findOne({
-              name: { $regex: new RegExp(`^${item?.name?.trim()}$`, "i") },
-              color: item?.color?._id.toString(),
-              productType: item?.productType?.trim(),
-            });
-            if (!product) {
-              return Math.floor(100000 + Math.random() * 900000).toString();
-            } else {
-              return product.sku;
-            }
-          }
-        : item?.sku?.trim();
+      product && (item.sku === "" || item.sku === null)
+        ? product.sku
+        : !product && item.sku
+        ? item.sku
+        : Math.floor(Math.random() * 100000).toString();
     productsData.push({ ...item, sku: sku });
   }
   try {
