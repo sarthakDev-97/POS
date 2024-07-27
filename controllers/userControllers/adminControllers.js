@@ -130,4 +130,33 @@ const patchAll = asyncWrapper(async (req, res) => {
     .send({ msg: "You are not authorized to perform this action." });
 });
 
-module.exports = { getAllUsers, getUserById, patchUserById, patchAll };
+const updateUserById = asyncWrapper(async (req, res) => {
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
+      .send({ msg: "You are not authorized to perform this action." });
+  }
+  const { id } = req.params;
+  const user = await User.findByIdAndUpdate(
+    id,
+    { ...req.body },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  if (!user) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "User not found. Please check again." });
+  }
+  res.code(StatusCodes.OK).send({ user, msg: "User updated successfully." });
+});
+
+module.exports = {
+  getAllUsers,
+  getUserById,
+  patchUserById,
+  patchAll,
+  updateUserById,
+};

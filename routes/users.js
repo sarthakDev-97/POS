@@ -3,6 +3,7 @@ const {
   getUserById,
   patchUserById,
   patchAll,
+  updateUserById,
 } = require("../controllers/userControllers/adminControllers");
 const {
   getUser,
@@ -29,6 +30,7 @@ const adminRoutes = (fastify, _, done) => {
   );
   fastify.get("/:id", { preHandler: authMiddleware }, getUserById);
   fastify.patch("/:id", { preHandler: authMiddleware }, patchUserById);
+  fastify.patch("/update/:id", { preHandler: authMiddleware }, updateUserById);
   fastify.patch("/patchall", { preHandler: authMiddleware }, patchAll);
 
   done();
