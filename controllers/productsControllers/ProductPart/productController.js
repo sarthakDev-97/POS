@@ -316,11 +316,11 @@ const deleteProduct = asyncWrapper(async (req, res) => {
 });
 
 const addMultipleProducts = asyncWrapper(async (req, res) => {
-  // if (req.user.typeofuser !== "admin") {
-  //   return res
-  //     .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
-  //     .send({ msg: "You are not authorized to perform this action." });
-  // }
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
+      .send({ msg: "You are not authorized to perform this action." });
+  }
   const { data } = req.body;
   let productsData = [];
   for (let item of data) {

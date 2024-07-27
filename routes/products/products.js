@@ -16,7 +16,7 @@ const productRoutes = (fastify, _, done) => {
   fastify.post("/", { preHandler: authMiddleware }, createProduct);
   fastify.post(
     "/multiple",
-    // { preHandler: authMiddleware },
+    { preHandler: authMiddleware },
     addMultipleProducts
   );
   fastify.patch("/:id", { preHandler: authMiddleware }, updateProduct);
