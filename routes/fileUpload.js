@@ -6,7 +6,7 @@ const fs = require("fs");
 const csvFile = require("../controllers/productsControllers/ProductPart/csvProductAdd");
 const {
   productComponents,
-} = require("../controllers/productsControllers/ProductPart/productController");
+} = require("../controllers/productsControllers/ProductPart/addCSVController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const storage = multer.diskStorage({
@@ -38,7 +38,7 @@ const uploadFunc = (fastify, _, done) => {
     "/import",
     {
       preHandler: [
-        (req, res) => authMiddleware(req, res),
+        // (req, res) => authMiddleware(req, res),
         upload.array("file", 1),
         (req, res) => csvFile(req, res),
       ],

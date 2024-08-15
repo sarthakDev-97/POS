@@ -7,11 +7,6 @@ const { toBoolean, toFloat } = require("validator");
 
 let data = [];
 
-const randomSKU = () => {
-  const sku = Math.floor(100000 + Math.random() * 900000);
-  return sku.toString();
-};
-
 const csvFile = asyncWrapper(async (req, res) => {
   const file = await new Promise(async (resolve, reject) => {
     fs.createReadStream(

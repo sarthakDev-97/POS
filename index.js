@@ -17,8 +17,7 @@ const brandsRoutes = require("./routes/products/brands");
 const productRoutes = require("./routes/products/products");
 const subcategoryRoutes = require("./routes/products/subcategory");
 const taxRoutes = require("./routes/products/tax");
-const { test } = require("./controllers/test");
-const colorRoutes = require("./routes/products/colors");
+const variationRoutes = require("./routes/products/variation");
 
 app.register(multer.contentParser);
 // app.then(test);
@@ -38,7 +37,7 @@ app.register(subcategoryRoutes, { prefix: "/api/v1/products/subcategory" }); //d
 app.register(unitsRoutes, { prefix: "/api/v1/products/units" }); //done on APIDOG
 app.register(brandsRoutes, { prefix: "/api/v1/products/brands" }); //done on APIDOG
 app.register(taxRoutes, { prefix: "/api/v1/products/tax" }); //done on APIDOG
-app.register(colorRoutes, { prefix: "/api/v1/products/color" }); //done on APIDOG
+app.register(variationRoutes, { prefix: "/api/v1/products/variation" }); //done on APIDOG
 
 app.setNotFoundHandler(notFound);
 app.setErrorHandler(errHandler);

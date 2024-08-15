@@ -97,9 +97,9 @@ const productSchema = new mongoose.Schema(
       enum: ["single", "variable"],
       default: "single",
     },
-    color: {
+    variation: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Color",
+      ref: "Variations",
       default: null,
     },
     rating: {

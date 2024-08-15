@@ -12,6 +12,13 @@ const resizeMiddleware = (fastify, _, done) => {
         .send({ msg: "No filename provided" });
     }
 
+    let { s } = request.query;
+    if (!s) {
+      s = 1000;
+    } else {
+      s = parseInt(s);
+    }
+
     try {
       const imagePath = path.join(__dirname, "../public/images", filename);
       if (!fs.existsSync(imagePath)) {
@@ -20,25 +27,10 @@ const resizeMiddleware = (fastify, _, done) => {
           .send({ msg: "File not found." });
       }
       const image = sharp(imagePath);
-      let resizedImage = image;
-
-      if (
-        request.query &&
-        request.query.s !== undefined &&
-        request.query.s !== null
-      ) {
-        const { s } = request.query;
-        resizedImage = resizedImage.resize(parseInt(s), parseInt(s), {
-          fit: "inside",
-          withoutEnlargement: true,
-        });
-      } else {
-        resizedImage = resizedImage.resize(2000, 2000, {
-          fit: "inside",
-          withoutReduction: true,
-          withoutEnlargement: true,
-        });
-      }
+      const resizedImage = image.resize(s, s, {
+        fit: "inside",
+        withoutEnlargement: true,
+      });
 
       reply.header("Content-Type", image.metadata().mimetype);
       await resizedImage.pipe(reply.raw);
