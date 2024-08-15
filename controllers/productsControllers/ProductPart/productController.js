@@ -65,7 +65,7 @@ const getProductById = asyncWrapper(async (req, res) => {
     .populate({ path: "variation", select: "-createdAt -updatedAt -__v" })
     .select("image variation")
     .lean();
-  product.variations = variants;
+  product.allVariants = variants;
   return res
     .code(StatusCodes.OK)
     .send({ product, msg: "Product retrieved successfully." });
