@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { isLowercase } = require("validator");
+const variation = require("./variation");
 
 const productSchema = new mongoose.Schema(
   {
@@ -98,9 +99,11 @@ const productSchema = new mongoose.Schema(
       default: "single",
     },
     variation: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Variations",
-      default: null,
+      variation: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Variations",
+        default: null,
+      },
     },
     rating: {
       type: [Object],

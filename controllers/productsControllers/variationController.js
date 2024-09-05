@@ -8,21 +8,9 @@ const getAllVariation = asyncWrapper(async (req, res) => {
       .status(StatusCodes.UNAUTHORIZED)
       .send({ msg: "Unauthorized access. Please login again." });
   }
+  const variations = await variationModel.distinct("type");
   res.code(StatusCodes.OK).send({
-    variations: [
-      "COLOR",
-      "NAME",
-      "PRINT",
-      "CARPET COLOR",
-      "B",
-      "H",
-      "RMS",
-      "TYPE",
-      "THICKNESS",
-      "LIGHT COLOR",
-      "CHAIR TYPE",
-      "SHADE",
-    ],
+    variations,
     msg: "Variations retrieved successfully.",
   });
 });

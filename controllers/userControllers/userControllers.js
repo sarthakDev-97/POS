@@ -1,5 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../../models/user");
+const addressModel = require("../../models/address");
 const asyncWrapper = require("../../middlewares/async");
 const myCache = require("../../middlewares/caching");
 
@@ -12,9 +13,15 @@ const getUser = asyncWrapper(async (req, res) => {
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "User not found. Please check again." });
   }
+  const addresses = await addressModel.find({ user: req.user.userId }).lean();
+  if (!addresses) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Addresses not found. Please check again." });
+  }
   return res
     .code(StatusCodes.OK)
-    .send({ user, msg: "User retrieved successfully." });
+    .send({ user, addresses, msg: "User retrieved successfully." });
 });
 
 const patchUser = asyncWrapper(async (req, res) => {

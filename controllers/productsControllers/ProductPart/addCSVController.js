@@ -110,15 +110,18 @@ const productComponents = asyncWrapper(async (req, res) => {
 
   for (let item of variationSet.values()) {
     let variation1 = await Variation.findOne({
-      value: new RegExp(`^${item}$`, "i"),
-      type: "COLOR",
+      value: new RegExp(`^${item.split("-")[1].trim()}$`, "i"),
+      type: new RegExp(`^${item.split("-")[0].trim()}$`, "i"),
     });
     if (!variation1) {
-      variation1 = await Variation.create({ value: item, type: "COLOR" });
+      variation1 = await Variation.create({
+        value: item.split("-")[1].trim(),
+        type: item.split("-")[0].trim(),
+      });
     }
     data.map((element) => {
       if (element.color === item) {
-        element.variation = variation1._id.toString();
+        element.variation = { variation: variation1._id.toString() };
       }
     });
   }
@@ -128,7 +131,7 @@ const productComponents = asyncWrapper(async (req, res) => {
     if (item.sku === null || !item.sku || item.sku.trim() !== "") {
       const product = await Product.findOne({
         name: { $regex: new RegExp(`^${item?.name?.trim()}$`, "i") },
-        color: item?.color,
+        "variation.variation": item?.variation?.variation,
         productType: item?.productType,
       });
       if (!product && (item.sku === null || !item.sku)) {

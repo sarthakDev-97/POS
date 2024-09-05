@@ -51,7 +51,7 @@ const getAllProducts = asyncWrapper(async (req, res) => {
 const getProductById = asyncWrapper(async (req, res) => {
   const { id } = await req.params;
   let product = await Product.findById(id)
-    .populate("unit category brand subcategory tax variation")
+    .populate("unit category brand subcategory tax variation.variation")
     .lean();
   if (!product) {
     return res
@@ -62,13 +62,14 @@ const getProductById = asyncWrapper(async (req, res) => {
     _id: { $ne: product._id },
     name: { $regex: new RegExp(`^${product.name.trim()}$`, "i") },
   })
-    .populate({ path: "variation", select: "-createdAt -updatedAt -__v" })
+    .populate("variation.variation")
     .select("image variation")
     .lean();
-  product.allVariants = variants;
-  return res
-    .code(StatusCodes.OK)
-    .send({ product, msg: "Product retrieved successfully." });
+  return res.code(StatusCodes.OK).send({
+    product,
+    allVariants: variants,
+    msg: "Product retrieved successfully.",
+  });
 });
 
 const createProduct = asyncWrapper(async (req, res) => {
