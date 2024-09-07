@@ -88,10 +88,29 @@ const deleteVariation = asyncWrapper(async (req, res) => {
   res.code(StatusCodes.OK).send({ msg: "Variation deleted successfully." });
 });
 
+const getVariationByIdReal = asyncWrapper(async (req, res) => {
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Unauthorized access. Please login again." });
+  }
+  const { id } = req.params;
+  const variation = await variationModel.findById(id).select("-__v").lean();
+  if (!variation) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Variation not found. Please check again." });
+  }
+  res
+    .code(StatusCodes.OK)
+    .send({ variation, msg: "Variation retrieved successfully." });
+});
+
 module.exports = {
   getAllVariation,
   getVariationById,
   createVariation,
   updateVariation,
   deleteVariation,
+  getVariationByIdReal,
 };

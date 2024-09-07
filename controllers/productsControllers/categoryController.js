@@ -5,41 +5,19 @@ const Subcategory = require("../../models/products/subcategory");
 const myCache = require("../../middlewares/caching");
 
 const getAllCategoriesWithSub = asyncWrapper(async (req, res) => {
-  const cachedCategoriesWithSub = myCache.get("categoriesWithSub");
-  if (cachedCategoriesWithSub !== undefined) {
-    return res.code(StatusCodes.OK).send({
-      categories: myCache.get("categoriesWithSub"),
-      msg: "Categories retrieved successfully.",
-    });
-  }
-  const categories = await Category.find()
-    .select("-description -createdAt -__v")
-    .sort({ name: 1 })
+  const response = await Subcategory.find()
+    .select("name category code updatedAt")
+    .populate("category", "-__v -createdAt")
     .lean();
-  if (!categories) {
+  if (!response) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
-      .send({ msg: "Categories not found. Please check again." });
+      .send({ msg: "Sub-Categories not found. Please check again." });
   }
-  const subcategory = await Subcategory.find()
-    .select("-__v -createdAt -updatedAt")
-    .lean();
-  if (!subcategory) {
-    return res
-      .code(StatusCodes.PARTIAL_CONTENT)
-      .send({ msg: "Subcategories not found. Please check again." });
-  }
-  const response = await categories.map((category) => {
-    category.subcategory = [];
-    category.subcategory = subcategory?.filter(
-      (sub) => sub.category.toString() === category._id.toString()
-    );
-    return category;
+  return res.code(StatusCodes.OK).send({
+    subcategories: response,
+    msg: "Categories retrieved successfully.",
   });
-  myCache.set("categoriesWithSub", response, 7200);
-  return res
-    .code(StatusCodes.OK)
-    .send({ categories: response, msg: "Categories retrieved successfully." });
 });
 
 const getAllCategories = asyncWrapper(async (req, res) => {

@@ -24,6 +24,7 @@ const productComponents = asyncWrapper(async (req, res) => {
   const categorySet = new Set();
   const subcategorySet = new Set();
   const variationSet = new Set();
+  const cateSubSet = new Set();
 
   data.forEach((element) => {
     element.unit && unitSet.add(element.unit.trim());
@@ -31,6 +32,11 @@ const productComponents = asyncWrapper(async (req, res) => {
     element.brand && brandSet.add(element.brand.trim());
     element.category && categorySet.add(element.category.trim());
     element.subCategory && subcategorySet.add(element.subCategory.trim());
+    element.category &&
+      element.subCategory &&
+      cateSubSet.add(
+        element.category.trim() + " - " + element.subCategory.trim()
+      );
     element.color && variationSet.add(element.color.trim());
   });
 
@@ -48,30 +54,42 @@ const productComponents = asyncWrapper(async (req, res) => {
     });
   }
 
-  for (let item of categorySet.values()) {
+  // for (let item of categorySet.values()) {
+  //   let category1 = await Category.findOne({
+  //     name: new RegExp(`^${item}$`, "i"),
+  //   });
+  //   if (!category1) {
+  //     category1 = await Category.create({ name: item });
+  //   }
+  //   data.map((element) => {
+  //     if (element.category.trim() === item) {
+  //       element.category = category1._id.toString();
+  //     }
+  //   });
+  // }
+
+  for (let item of cateSubSet.values()) {
     let category1 = await Category.findOne({
-      name: new RegExp(`^${item}$`, "i"),
+      name: new RegExp(`^${item.split(" - ")[0]}$`, "i"),
     });
     if (!category1) {
-      category1 = await Category.create({ name: item });
+      category1 = await Category.create({ name: item.split(" - ")[0] });
     }
-    data.map((element) => {
-      if (element.category.trim() === item) {
-        element.category = category1._id.toString();
-      }
-    });
-  }
-
-  for (let item of subcategorySet.values()) {
     let subcategory1 = await Subcategory.findOne({
-      name: new RegExp(`^${item}$`, "i"),
+      name: new RegExp(`^${item.split(" - ")[1]}$`, "i"),
     });
     if (!subcategory1) {
-      subcategory1 = await Subcategory.create({ name: item });
+      subcategory1 = await Subcategory.create({
+        name: item.split(" - ")[1],
+        category: category1._id.toString(), // Add parent category here
+      });
     }
     data.map((element) => {
-      if (element.subCategory.trim() === item) {
-        element.subCategory = subcategory1._id.toString();
+      if (element.subCategory.trim() === item.split(" - ")[1]) {
+        element.subcategory = subcategory1._id.toString();
+      }
+      if (element.category.trim() === item.split(" - ")[0]) {
+        element.category = category1._id.toString();
       }
     });
   }

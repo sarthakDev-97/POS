@@ -15,6 +15,11 @@ const variationSchema = new mongoose.Schema(
       uppercase: true,
       default: "COLOR",
     },
+    image: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
   {
     timestamps: true,
