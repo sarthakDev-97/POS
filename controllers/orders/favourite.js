@@ -38,7 +38,7 @@ const removeFavourite = asyncWrapper(async (req, res) => {
   const { id } = req.params;
   const favourite = await favModel.findOneAndDelete({
     user: req.user.userId,
-    product: id,
+    _id: id,
   });
   if (!favourite) {
     return res
