@@ -94,10 +94,28 @@ const updateOrder = asyncWrapper(async (req, res) => {
 
 const deleteOrder = asyncWrapper(async (req, res) => {});
 
+const getAdminAllOrders = asyncWrapper(async (req, res) => {
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "You are not authorized to perform this action." });
+  }
+  const orders = await orderSchema.find().sort("-createdAt").lean();
+  if (!orders) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "No orders found." });
+  }
+  res
+    .code(StatusCodes.OK)
+    .send({ orders, msg: "Orders retrieved successfully." });
+});
+
 module.exports = {
   getAllOrders,
   getOrderById,
   createOrder,
   updateOrder,
   deleteOrder,
+  getAdminAllOrders,
 };

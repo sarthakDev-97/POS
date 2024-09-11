@@ -4,10 +4,16 @@ const {
   createOrder,
   updateOrder,
   deleteOrder,
+  getAdminAllOrders,
 } = require("../../controllers/orders/order");
 const authMiddleware = require("../../middlewares/authMiddleware");
 
 const orderRoutes = (fastify, _, done) => {
+  fastify.get(
+    "/getAllAdmin",
+    { preHandler: authMiddleware },
+    getAdminAllOrders
+  );
   fastify.get("/", { preHandler: authMiddleware }, getAllOrders);
   fastify.get("/:id", { preHandler: authMiddleware }, getOrderById);
   fastify.post("/", { preHandler: authMiddleware }, createOrder);

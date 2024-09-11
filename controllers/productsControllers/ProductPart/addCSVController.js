@@ -139,7 +139,7 @@ const productComponents = asyncWrapper(async (req, res) => {
     }
     data.map((element) => {
       if (element.color === item) {
-        element.variation = { variation: variation1._id.toString() };
+        element.variation = variation1._id.toString();
       }
     });
   }
@@ -149,7 +149,7 @@ const productComponents = asyncWrapper(async (req, res) => {
     if (item.sku === null || !item.sku || item.sku.trim() !== "") {
       const product = await Product.findOne({
         name: { $regex: new RegExp(`^${item?.name?.trim()}$`, "i") },
-        "variation.variation": item?.variation?.variation,
+        variation: item?.variation,
         productType: item?.productType,
       });
       if (!product && (item.sku === null || !item.sku)) {

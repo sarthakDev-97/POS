@@ -99,11 +99,9 @@ const productSchema = new mongoose.Schema(
       default: "single",
     },
     variation: {
-      variation: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Variations",
-        default: null,
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Variations",
+      default: null,
     },
     rating: {
       type: [Object],

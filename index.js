@@ -76,7 +76,7 @@ if (cluster.isPrimary) {
       console.log(
         `Server listening on ${app.server.address().address}:${
           app.server.address().port
-        }`
+        } at process ${process.pid}`
       );
     } catch (err) {
       app.log.error(err);

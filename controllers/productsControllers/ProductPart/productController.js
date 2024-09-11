@@ -62,8 +62,8 @@ const getProductById = asyncWrapper(async (req, res) => {
     _id: { $ne: product._id },
     name: { $regex: new RegExp(`^${product.name.trim()}$`, "i") },
   })
-    .populate("variation.variation")
     .select("image variation")
+    .populate("variation")
     .lean();
   return res.code(StatusCodes.OK).send({
     product,
