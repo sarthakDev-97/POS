@@ -51,7 +51,7 @@ const getAllProducts = asyncWrapper(async (req, res) => {
 const getProductById = asyncWrapper(async (req, res) => {
   const { id } = await req.params;
   let product = await Product.findById(id)
-    .populate("unit category brand subcategory tax variation.variation")
+    .populate("unit category brand subcategory tax variation")
     .lean();
   if (!product) {
     return res
