@@ -25,7 +25,9 @@ const getAllProducts = asyncWrapper(async (req, res) => {
   const skipItems = (currentPage - 1) * itemsPerPage;
 
   const products = await Product.find(queryObject)
-    .select("sku name image currentStock minStock isActive")
+    .select(
+      "sku name image currentStock minStock isActive unitSellingPriceLow unitSellingPriceHigh"
+    )
     .sort(sortQuery.sort)
     .limit(itemsPerPage)
     .skip(skipItems)
