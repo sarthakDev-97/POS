@@ -1,6 +1,7 @@
 const asyncWrapper = require("../../../middlewares/async");
 const { StatusCodes } = require("http-status-codes");
 const Product = require("../../../models/products/product");
+const favModel = require("../../../models/orders/favourite");
 
 const getAllProducts = asyncWrapper(async (req, res) => {
   const { search, sort, active, page, result } = req.query;
@@ -67,7 +68,14 @@ const getProductById = asyncWrapper(async (req, res) => {
     .select("image variation")
     .populate("variation")
     .lean();
+  const favourite = await favModel
+    .findOne({
+      user: req?.user?.userId,
+      product: product?._id,
+    })
+    .select("_id");
   return res.code(StatusCodes.OK).send({
+    fav: favourite?._id || null,
     product,
     allVariants: variants,
     msg: "Product retrieved successfully.",
