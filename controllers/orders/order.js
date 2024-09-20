@@ -9,6 +9,13 @@ const getAllOrders = asyncWrapper(async (req, res) => {
     .select(
       "products.quantity products.product quantity status paymentMethod paymentStatus deliveryDate totalPayable createdAt updatedAt"
     )
+    .populate({
+      path: "products.product",
+      select:
+        "name image variation unitSellingPriceHigh unitSellingPriceLow tax",
+      populate: { path: "tax", select: "rate" },
+      populate: { path: "variation", select: "type value" },
+    })
     .lean();
   if (!orders) {
     return res
@@ -22,7 +29,16 @@ const getAllOrders = asyncWrapper(async (req, res) => {
 
 const getOrderById = asyncWrapper(async (req, res) => {
   const { id } = req.params;
-  const order = await orderSchema.findOne({ _id: id, user: req.user.userId });
+  const order = await orderSchema
+    .findOne({ _id: id, user: req.user.userId })
+    .populate({
+      path: "products.product",
+      select:
+        "name image variation unitSellingPriceHigh unitSellingPriceLow tax",
+      populate: { path: "tax", select: "rate" },
+      populate: { path: "variation", select: "type value" },
+    })
+    .lean();
   if (!order) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
@@ -46,8 +62,12 @@ const createOrder = asyncWrapper(async (req, res) => {
       ((product.product.unitSellingPriceLow * product.product.tax.rate) / 100 +
         product.product.unitSellingPriceLow) *
       product.quantity;
+    product.totalTaxes =
+      ((product.product.unitSellingPriceLow * product.product.tax.rate) / 100) *
+      product.quantity;
     product.withoutTax = product.totalPrice - product.product.tax.rate;
   });
+  console.log(products.products);
   newOrder.user = user;
   newOrder.totalPayable =
     products.products.reduce((acc, curr) => acc + curr.totalPrice, 0) -
@@ -63,6 +83,10 @@ const createOrder = asyncWrapper(async (req, res) => {
   );
   newOrder.quantity = products.products.reduce(
     (acc, curr) => acc + curr.quantity,
+    0
+  );
+  newOrder.taxes = products.products.reduce(
+    (acc, curr) => acc + curr.totalTaxes,
     0
   );
   const order = await newOrder.save();
