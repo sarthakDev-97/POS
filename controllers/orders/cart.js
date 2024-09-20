@@ -5,7 +5,6 @@ const { StatusCodes } = require("http-status-codes");
 const getCart = asyncWrapper(async (req, res) => {
   const cart = await cartSchema
     .find({ user: req.user.userId })
-    .lean()
     .populate({
       path: "product",
       select:
@@ -16,7 +15,8 @@ const getCart = asyncWrapper(async (req, res) => {
         { path: "subcategory", select: "name" }, // Nested population
         { path: "brand", select: "name" }, // Nested population
       ],
-    });
+    })
+    .lean();
   if (!cart) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
@@ -34,11 +34,15 @@ const getCart = asyncWrapper(async (req, res) => {
   const totalPrice = newData.reduce((acc, curr) => {
     return acc + curr.priceIncTaxes;
   }, 0);
+  const subTotal = newData.reduce((acc, curr) => {
+    return acc + curr.priceNoTax;
+  }, 0);
   const totalQuantity = newData.reduce((acc, curr) => {
     return acc + curr.quantity;
   }, 0);
   return res.status(StatusCodes.OK).send({
     cart: newData,
+    subTotal,
     totalPrice,
     totalQuantity,
     msg: "Cart retrieved successfully.",
