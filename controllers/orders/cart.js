@@ -1,3 +1,4 @@
+const { toFloat } = require("validator");
 const asyncWrapper = require("../../middlewares/async");
 const cartSchema = require("../../models/orders/cart");
 const { StatusCodes } = require("http-status-codes");
@@ -8,7 +9,7 @@ const getCart = asyncWrapper(async (req, res) => {
     .populate({
       path: "product",
       select:
-        "unitSellingPriceLow unitSellingPriceHigh tax name image description sku category subcategory brand",
+        "unitSellingPriceLow unitSellingPriceHigh tax name image description sku category subcategory brand isActive",
       populate: [
         { path: "tax", select: "rate" }, // Nested population
         { path: "category", select: "name" }, // Nested population
@@ -62,11 +63,21 @@ const addToCart = asyncWrapper(async (req, res) => {
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Cart item not Added. Please check again." });
   }
-  const newData = await cart.populate({
+  await cart.populate({
     path: "product",
-    select: "unitSellingPriceLow unitSellingPriceHigh tax",
+    select: "unitSellingPriceLow unitSellingPriceHigh tax isActive stock unit",
     populate: { path: "tax", select: "rate" },
+    populate: { path: "unit", select: "name" },
   });
+  if (
+    cart.product.stock <
+    (cart.quantity * cart.unit?.name?.split(" ")[0].toFloat() || 1)
+  ) {
+    await cartSchema.findByIdAndDelete(cart._id);
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Product out of stock." });
+  }
   const { product, quantity } = cart;
   const priceNoTax = (await product.unitSellingPriceLow) * quantity;
   const priceIncTaxes =
