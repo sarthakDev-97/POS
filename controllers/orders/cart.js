@@ -69,15 +69,6 @@ const addToCart = asyncWrapper(async (req, res) => {
     populate: { path: "tax", select: "rate" },
     populate: { path: "unit", select: "name" },
   });
-  if (
-    cart.product.stock <
-    (cart.quantity * cart.unit?.name?.split(" ")[0].toFloat() || 1)
-  ) {
-    await cartSchema.findByIdAndDelete(cart._id);
-    return res
-      .code(StatusCodes.PARTIAL_CONTENT)
-      .send({ msg: "Product out of stock." });
-  }
   const { product, quantity } = cart;
   const priceNoTax = (await product.unitSellingPriceLow) * quantity;
   const priceIncTaxes =
