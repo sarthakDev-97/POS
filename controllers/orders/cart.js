@@ -118,4 +118,14 @@ const deleteCart = asyncWrapper(async (req, res) => {
     .send({ msg: "Cart item deleted successfully." });
 });
 
-module.exports = { getCart, addToCart, updateCart, deleteCart };
+const clearCart = asyncWrapper(async (req, res) => {
+  const cart = await cartSchema.deleteMany({ user: req.user.userId }).lean();
+  if (!cart) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Cart not cleared. Please check again." });
+  }
+  return res.code(StatusCodes.OK).send({ msg: "Cart cleared successfully." });
+});
+
+module.exports = { getCart, addToCart, updateCart, deleteCart, clearCart };
