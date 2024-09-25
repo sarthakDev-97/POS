@@ -3,6 +3,7 @@ require("dotenv").config();
 const fastify = require("fastify");
 const app = fastify();
 const cluster = require("node:cluster");
+const fulfillRoutes = require("./routes/orders/fulfillment");
 
 if (cluster.isPrimary) {
   const cpuNum = require("node:os").cpus().length;
@@ -36,7 +37,6 @@ if (cluster.isPrimary) {
   const orderRoutes = require("./routes/orders/order");
 
   app.register(multer.contentParser);
-  // app.then(test);
   app.register(require("@fastify/cors"), {
     origin: "*", // Replace with the actual URLs of your websites
   });
@@ -45,6 +45,7 @@ if (cluster.isPrimary) {
   app.register(uploadFunc, { prefix: "/api/v1/files" });
 
   app.get("/", (req, res) => {
+    console.log(`hello from server ${process.pid}`);
     res.send(`hello from server ${process.pid}`);
   });
 
@@ -61,7 +62,8 @@ if (cluster.isPrimary) {
   app.register(variationRoutes, { prefix: "/api/v1/products/variation" }); //done on APIDOG
   app.register(favouriteRoutes, { prefix: "/api/v1/orders/favourites" }); //done on APIDOG
   app.register(cartRoutes, { prefix: "/api/v1/orders/cart" }); //done on APIDOG
-  app.register(orderRoutes, { prefix: "/api/v1/orders" });
+  app.register(orderRoutes, { prefix: "/api/v1/orders" }); //done on APIDOG
+  app.register(fulfillRoutes, { prefix: "/api/v1/fulfillment" });
 
   app.setNotFoundHandler(notFound);
   app.setErrorHandler(errHandler);

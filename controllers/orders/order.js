@@ -1,5 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const orderSchema = require("../../models/orders/order");
+const fulfillmentModel = require("../../models/orders/fulfilment");
+const userSchema = require("../../models/user");
 const asyncWrapper = require("../../middlewares/async");
 
 const getAllOrders = asyncWrapper(async (req, res) => {
@@ -52,22 +54,23 @@ const getOrderById = asyncWrapper(async (req, res) => {
 const createOrder = asyncWrapper(async (req, res) => {
   const user = req.user.userId;
   const newOrder = new orderSchema(req.body);
-  const products = await newOrder.populate({
+  let products = await newOrder.populate({
     path: "products.product",
     select: "unitSellingPriceHigh unitSellingPriceLow tax",
     populate: { path: "tax", select: "rate" },
   });
-  products.products.forEach((product) => {
+  products.products.forEach(async (product) => {
     product.totalPrice =
       ((product.product.unitSellingPriceLow * product.product.tax.rate) / 100 +
         product.product.unitSellingPriceLow) *
       product.quantity;
     product.totalTaxes =
-      ((product.product.unitSellingPriceLow * product.product.tax.rate) / 100) *
+      ((product.product.unitSellingPriceLow *
+        (product.product?.tax?.rate || 0)) /
+        100) *
       product.quantity;
-    product.withoutTax = product.totalPrice - product.product.tax.rate;
+    product.withoutTax = product.totalPrice - product.totalTaxes;
   });
-  console.log(products.products);
   newOrder.user = user;
   newOrder.totalPayable =
     products.products.reduce((acc, curr) => acc + curr.totalPrice, 0) -
@@ -90,6 +93,42 @@ const createOrder = asyncWrapper(async (req, res) => {
     0
   );
   const order = await newOrder.save();
+  if (!order) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Order not created. Please try again." });
+  }
+  const seller = await userSchema
+    .findOne({ typeofuser: "seller" })
+    .select("_id");
+  const prods = products.products.map((product) => {
+    return {
+      product: product.product._id,
+      quantity: product.quantity,
+      totalTaxes: product.totalTaxes,
+      totalPrice: product.totalPrice,
+      purchasedUnitPrice: product.product.unitSellingPriceLow,
+    };
+  });
+  const newFulfillment = await fulfillmentModel.create({
+    order: order._id,
+    seller: seller._id,
+    productsOrdered: prods,
+    productsSent: [],
+    discount: newOrder.discount,
+    coupon: newOrder.coupon,
+    shippingCharge: newOrder.shippingCharge,
+    totalPayable: newOrder.totalPayable,
+    totalWithoutDiscounts: newOrder.totalWithoutDiscounts,
+    totalTaxes: newOrder.taxes,
+    totalWOTaxes: newOrder.totalPriceWOTax,
+  });
+  if (!newFulfillment) {
+    await orderSchema.findOneAndDelete({ _id: order._id });
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Order not created. Please try again." });
+  }
   res.code(StatusCodes.CREATED).send({
     order,
     msg: "Order created successfully",
