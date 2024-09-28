@@ -3,7 +3,7 @@ const { StatusCodes } = require("http-status-codes");
 const asyncWrapper = require("../../middlewares/async");
 
 const getFulfillment = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser === "admin" || req.user.typeofuser === "seller") {
+  if (req.user.typeofuser === "user") {
     return res
       .code(StatusCodes.UNAUTHORIZED)
       .send({ msg: "Unauthorized access." });
@@ -80,7 +80,7 @@ const getFulfillment = asyncWrapper(async (req, res) => {
 });
 
 const getFulfillmentById = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser === "admin" || req.user.typeofuser === "seller") {
+  if (req.user.typeofuser === "user") {
     return res
       .code(StatusCodes.UNAUTHORIZED)
       .send({ msg: "Unauthorized access." });
@@ -125,7 +125,7 @@ const getFulfillmentById = asyncWrapper(async (req, res) => {
 });
 
 const updateFulfillment = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser === "admin" || req.user.typeofuser === "seller") {
+  if (req.user.typeofuser === "user") {
     return res
       .code(StatusCodes.UNAUTHORIZED)
       .send({ msg: "Unauthorized access." });
