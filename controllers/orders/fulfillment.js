@@ -2,6 +2,7 @@ const fulfillmentModel = require("../../models/orders/fulfilment");
 const { StatusCodes } = require("http-status-codes");
 const asyncWrapper = require("../../middlewares/async");
 const orderModel = require("../../models/orders/order");
+const productModel = require("../../models/products/product");
 
 const getFulfillment = asyncWrapper(async (req, res) => {
   if (req.user.typeofuser === "user") {
@@ -153,7 +154,7 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
       fulfillment.order,
       status,
       {
-        new: true,
+        new: false,
         runValidators: true,
       }
     );
@@ -161,6 +162,22 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
       return res
         .code(StatusCodes.PARTIAL_CONTENT)
         .send({ msg: "Order status not updated. Please check again." });
+    }
+    if (order.status !== "cancelled" && status.toLowerCase() === "cancelled") {
+      const products = await Promise.all(
+        fulfillment.productsOrdered.map((p) =>
+          productModel.findByIdAndUpdate(
+            p.product,
+            { $inc: { stock: p.quantity } },
+            { new: true }
+          )
+        )
+      );
+      if (!products) {
+        return res
+          .code(StatusCodes.PARTIAL_CONTENT)
+          .send({ msg: "Stock update failed. Please try again." });
+      }
     }
   }
   return res
