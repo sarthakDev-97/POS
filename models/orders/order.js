@@ -24,6 +24,8 @@ const orderSchema = new mongoose.Schema(
     quantity: { type: Number, required: true, default: 1 },
     status: {
       type: String,
+      lowercase: true,
+      trim: true,
       enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
       default: "pending",
     },

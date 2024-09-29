@@ -3,6 +3,7 @@ const orderSchema = require("../../models/orders/order");
 const fulfillmentModel = require("../../models/orders/fulfilment");
 const userSchema = require("../../models/user");
 const asyncWrapper = require("../../middlewares/async");
+const productModel = require("../../models/products/product");
 
 const getAllOrders = asyncWrapper(async (req, res) => {
   const orders = await orderSchema
@@ -56,7 +57,7 @@ const createOrder = asyncWrapper(async (req, res) => {
   const newOrder = new orderSchema(req.body);
   let products = await newOrder.populate({
     path: "products.product",
-    select: "unitSellingPriceHigh unitSellingPriceLow tax",
+    select: "unitSellingPriceHigh unitSellingPriceLow tax stock",
     populate: { path: "tax", select: "rate" },
   });
   products.products.forEach(async (product) => {
@@ -70,6 +71,17 @@ const createOrder = asyncWrapper(async (req, res) => {
         100) *
       product.quantity;
     product.withoutTax = product.totalPrice - product.totalTaxes;
+    const stockUpdate = await productModel.findByIdAndUpdate(
+      product.product._id,
+      {
+        stock: product.product.stock - product.quantity,
+      }
+    );
+    if (!stockUpdate) {
+      return res
+        .code(StatusCodes.PARTIAL_CONTENT)
+        .send({ msg: "Stock update failed. Please try again." });
+    }
   });
   newOrder.user = user;
   newOrder.totalPayable =
@@ -98,6 +110,7 @@ const createOrder = asyncWrapper(async (req, res) => {
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Order not created. Please try again." });
   }
+  const productUpdate = await productModel.updateMany();
   const seller = await userSchema
     .findOne({ typeofuser: "seller" })
     .select("_id");
@@ -155,7 +168,60 @@ const updateOrder = asyncWrapper(async (req, res) => {
   });
 });
 
-const deleteOrder = asyncWrapper(async (req, res) => {});
+const cancelOrder = asyncWrapper(async (req, res) => {
+  const validateOrder = await orderSchema.findOne({
+    _id: req.params.id,
+    user: req.user.userId,
+    status: "Pending",
+    createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+  });
+  if (!validateOrder) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({
+        msg: "Order not found or cannot be cancelled after 24hrs of ordering. Please contact customer support.",
+      });
+  }
+  const order = await orderSchema.findOneAndUpdate(
+    { _id: req.params.id, user: req.user.userId },
+    { status: "Cancelled" },
+    { new: true, runValidators: true }
+  );
+  if (!order) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Order not found. Please check again." });
+  }
+  const fulfillment = await fulfillmentModel.findOneAndUpdate(
+    { order: order._id },
+    {
+      status: "Cancelled",
+    }
+  );
+  if (!fulfillment) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Fulfillment not found. Please check again." });
+  }
+  const products = await Promise.all(
+    fulfillment.productsOrdered.map((p) =>
+      productModel.findByIdAndUpdate(
+        p.product,
+        { $inc: { stock: p.quantity } },
+        { new: true }
+      )
+    )
+  );
+  if (!products) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Stock update failed. Please try again." });
+  }
+  res.code(StatusCodes.OK).send({
+    order,
+    msg: "Order cancelled successfully.",
+  });
+});
 
 const getAdminAllOrders = asyncWrapper(async (req, res) => {
   if (req.user.typeofuser !== "admin") {
@@ -179,6 +245,6 @@ module.exports = {
   getOrderById,
   createOrder,
   updateOrder,
-  deleteOrder,
+  cancelOrder,
   getAdminAllOrders,
 };

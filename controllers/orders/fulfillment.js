@@ -1,6 +1,7 @@
 const fulfillmentModel = require("../../models/orders/fulfilment");
 const { StatusCodes } = require("http-status-codes");
 const asyncWrapper = require("../../middlewares/async");
+const orderModel = require("../../models/orders/order");
 
 const getFulfillment = asyncWrapper(async (req, res) => {
   if (req.user.typeofuser === "user") {
@@ -131,14 +132,36 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
       .send({ msg: "Unauthorized access." });
   }
   const { id } = req.params;
-  const fulfillment = await fulfillmentModel.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const { status } = req.body;
+  const fulfillment = await fulfillmentModel.findOneAndUpdate(
+    req.user.typeofuser === "seller"
+      ? { _id: id, seller: req.user._id }
+      : { _id: id },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
   if (!fulfillment) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Fulfillment not updated. Please check again." });
+  }
+  if (status) {
+    const order = await orderModel.findByIdAndUpdate(
+      fulfillment.order,
+      status,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (!order) {
+      return res
+        .code(StatusCodes.PARTIAL_CONTENT)
+        .send({ msg: "Order status not updated. Please check again." });
+    }
   }
   return res
     .code(StatusCodes.OK)

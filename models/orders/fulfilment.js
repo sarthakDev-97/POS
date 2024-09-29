@@ -18,7 +18,7 @@ const fulfillmentSchema = new mongoose.Schema(
       trim: true,
       uppercase: true,
       default: "PENDING",
-      enum: ["PENDING", "COMPLETED", "CANCELLED"],
+      enum: ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"],
     },
     productsOrdered: [
       {
