@@ -135,7 +135,18 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   const fulfillment = await fulfillmentModel.findOneAndUpdate(
-    req.user.typeofuser === "seller"
+    status.toLowerCase() !== "cancelled"
+      ? req.user.typeofuser === "seller"
+        ? {
+            _id: id,
+            seller: req.user._id,
+            status: "PENDING" || "SHIPPED" || "DELIVERED" || "PROCESSING",
+          }
+        : {
+            _id: id,
+            status: "PENDING" || "SHIPPED" || "DELIVERED" || "PROCESSING",
+          }
+      : req.user.typeofuser === "seller"
       ? { _id: id, seller: req.user._id }
       : { _id: id },
     req.body,
@@ -147,7 +158,10 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
   if (!fulfillment) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
-      .send({ msg: "Fulfillment not updated. Please check again." });
+      .send({
+        msg: "Fulfillment not updated. Please check again.",
+        note: "Status of a cancelled order cannot be changed.",
+      });
   }
   if (status) {
     const order = await orderModel.findByIdAndUpdate(
