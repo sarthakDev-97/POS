@@ -35,6 +35,7 @@ if (cluster.isPrimary) {
   const favouriteRoutes = require("./routes/orders/favourites");
   const cartRoutes = require("./routes/orders/cart");
   const orderRoutes = require("./routes/orders/order");
+  const reviewRoutes = require("./routes/products/review");
 
   app.register(multer.contentParser);
   app.register(require("@fastify/cors"), {
@@ -60,10 +61,11 @@ if (cluster.isPrimary) {
   app.register(brandsRoutes, { prefix: "/api/v1/products/brands" }); //done on APIDOG
   app.register(taxRoutes, { prefix: "/api/v1/products/tax" }); //done on APIDOG
   app.register(variationRoutes, { prefix: "/api/v1/products/variation" }); //done on APIDOG
+  app.register(reviewRoutes, { prefix: "/api/v1/product/review" });
   app.register(favouriteRoutes, { prefix: "/api/v1/orders/favourites" }); //done on APIDOG
   app.register(cartRoutes, { prefix: "/api/v1/orders/cart" }); //done on APIDOG
   app.register(orderRoutes, { prefix: "/api/v1/orders" }); //done on APIDOG
-  app.register(fulfillRoutes, { prefix: "/api/v1/fulfillment" });
+  app.register(fulfillRoutes, { prefix: "/api/v1/fulfillment" }); //done on APIDOG
 
   app.setNotFoundHandler(notFound);
   app.setErrorHandler(errHandler);

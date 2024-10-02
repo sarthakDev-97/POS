@@ -2,6 +2,8 @@ const asyncWrapper = require("../../../middlewares/async");
 const { StatusCodes } = require("http-status-codes");
 const Product = require("../../../models/products/product");
 const favModel = require("../../../models/orders/favourite");
+const reviewModel = require("../../../models/products/review");
+const { toFloat } = require("validator");
 
 const getAllProducts = asyncWrapper(async (req, res) => {
   const { search, sort, active, page, result } = req.query;
@@ -25,7 +27,7 @@ const getAllProducts = asyncWrapper(async (req, res) => {
 
   const skipItems = (currentPage - 1) * itemsPerPage;
 
-  const products = await Product.find(queryObject)
+  let products = await Product.find(queryObject)
     .select(
       "sku name image currentStock minStock isActive unitSellingPriceLow unitSellingPriceHigh tax"
     )
@@ -40,6 +42,16 @@ const getAllProducts = asyncWrapper(async (req, res) => {
       msg: "Products not found. Please check again.",
     });
   }
+  products = await Promise.all(
+    products.map(async (product) => {
+      const review = await reviewModel.aggregate([
+        { $match: { product: product._id } },
+        { $group: { _id: "$product", avgRating: { $avg: "$rating" } } },
+      ]);
+      const avgRating = review.length > 0 ? review[0].avgRating : 0;
+      return { ...product, rating: toFloat(avgRating?.toFixed(1)) };
+    })
+  );
   return res.code(StatusCodes.OK).send({
     products,
     msg: "Products retrieved successfully.",
@@ -75,6 +87,14 @@ const getProductById = asyncWrapper(async (req, res) => {
       product: product?._id,
     })
     .select("_id");
+  product.rating = await reviewModel
+    .aggregate([
+      { $match: { product: product?._id } },
+      { $group: { _id: "$product", avgRating: { $avg: "$rating" } } },
+    ])
+    .then((data) =>
+      data.length > 0 ? toFloat(data[0].avgRating?.toFixed(1)) : 0
+    );
   return res.code(StatusCodes.OK).send({
     fav: favourite?._id || null,
     product,
