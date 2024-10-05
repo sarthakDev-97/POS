@@ -4,6 +4,7 @@ const fulfillmentModel = require("../../models/orders/fulfilment");
 const userSchema = require("../../models/user");
 const asyncWrapper = require("../../middlewares/async");
 const productModel = require("../../models/products/product");
+const favouriteModel = require("../../models/orders/favourite");
 
 const getAllOrders = asyncWrapper(async (req, res) => {
   const orders = await orderSchema
@@ -110,7 +111,6 @@ const createOrder = asyncWrapper(async (req, res) => {
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Order not created. Please try again." });
   }
-  const productUpdate = await productModel.updateMany();
   const seller = await userSchema
     .findOne({ typeofuser: "seller" })
     .select("_id");
@@ -141,6 +141,24 @@ const createOrder = asyncWrapper(async (req, res) => {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Order not created. Please try again." });
+  }
+  try {
+    await Promise.all(
+      products.products.map(async (product) => {
+        const exists = await favouriteModel.findOne({
+          user: req.user.userId,
+          product: product.product._id,
+        });
+        if (!exists) {
+          await favouriteModel.create({
+            user: req.user.userId,
+            product: product.product._id,
+          });
+        }
+      })
+    );
+  } catch (error) {
+    console.log(error);
   }
   res.code(StatusCodes.CREATED).send({
     order,
@@ -176,11 +194,9 @@ const cancelOrder = asyncWrapper(async (req, res) => {
     createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
   });
   if (!validateOrder) {
-    return res
-      .code(StatusCodes.PARTIAL_CONTENT)
-      .send({
-        msg: "Order not found or cannot be cancelled after 24hrs of ordering. Please contact customer support.",
-      });
+    return res.code(StatusCodes.PARTIAL_CONTENT).send({
+      msg: "Order not found or cannot be cancelled after 24hrs of ordering. Please contact customer support.",
+    });
   }
   const order = await orderSchema.findOneAndUpdate(
     { _id: req.params.id, user: req.user.userId },
