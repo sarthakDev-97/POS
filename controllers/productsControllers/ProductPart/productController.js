@@ -104,7 +104,7 @@ const getProductById = asyncWrapper(async (req, res) => {
 });
 
 const createProduct = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser !== "admin" || req.user.typeofuser !== "seller") {
+  if (req.user.typeofuser !== "admin" && req.user.typeofuser !== "seller") {
     return res
       .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
       .send({ msg: "You are not authorized to perform this action." });
@@ -136,7 +136,7 @@ const createProduct = asyncWrapper(async (req, res) => {
 });
 
 const updateProduct = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser !== "admin" || req.user.typeofuser !== "seller") {
+  if (req.user.typeofuser !== "admin" && req.user.typeofuser !== "seller") {
     return res
       .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
       .send({ msg: "You are not authorized to perform this action." });
