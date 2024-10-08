@@ -2,20 +2,49 @@ const asyncWrapper = require("../../../middlewares/async");
 const { StatusCodes } = require("http-status-codes");
 const Product = require("../../../models/products/product");
 const favModel = require("../../../models/orders/favourite");
+const brandModel = require("../../../models/products/brand");
+const categoryModel = require("../../../models/products/category");
+const subcategoryModel = require("../../../models/products/subcategory");
 const reviewModel = require("../../../models/products/review");
 const { toFloat } = require("validator");
 
 const getAllProducts = asyncWrapper(async (req, res) => {
-  const { search, sort, active, page, result } = req.query;
+  const { search, searchById, sort, active, page, result } = req.query;
   const queryObject = {};
   const sortQuery = {};
   const itemsPerPage = parseInt(result) || 5;
   const currentPage = parseInt(page) || 1;
 
   if (search) {
+    const brands = await brandModel
+      .find({ name: { $regex: search, $options: "i" } })
+      .select("_id");
+    const category = await categoryModel
+      .find({
+        name: { $regex: search, $options: "i" },
+      })
+      .select("_id");
+    const subcategory = await subcategoryModel
+      .find({
+        name: { $regex: search, $options: "i" },
+      })
+      .select("_id");
+    const subcategoryIds = subcategory.map((sub) => sub._id);
+    const categoryIds = category.map((cat) => cat._id);
+    const brandIds = brands.map((brand) => brand._id);
     queryObject.$or = [
       { name: { $regex: search, $options: "i" } },
       { sku: { $regex: search, $options: "i" } },
+      { brand: { $in: brandIds } },
+      { category: { $in: categoryIds } },
+      { subcategory: { $in: subcategoryIds } },
+    ];
+  }
+  if (searchById) {
+    queryObject.$or = [
+      { brand: searchById },
+      { category: searchById },
+      { subcategory: searchById },
     ];
   }
   if (sort) {

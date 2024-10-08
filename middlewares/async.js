@@ -5,7 +5,7 @@ const asyncWrapper = (fn) => {
     try {
       await fn(req, res, next); // Call the asynchronous function
     } catch (error) {
-      // console.log(error);
+      // console.log(error); // Uncomment to log the error for debugging
       if (typeof next === "function") {
         // Ensure next is a function before calling it
         next(error); // Pass the error to the next middleware or error handler
