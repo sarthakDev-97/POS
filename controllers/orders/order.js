@@ -72,17 +72,17 @@ const createOrder = asyncWrapper(async (req, res) => {
         100) *
       product.quantity;
     product.withoutTax = product.totalPrice - product.totalTaxes;
-    const stockUpdate = await productModel.findByIdAndUpdate(
-      product.product._id,
-      {
-        stock: product.product.stock - product.quantity,
-      }
-    );
-    if (!stockUpdate) {
-      return res
-        .code(StatusCodes.PARTIAL_CONTENT)
-        .send({ msg: "Stock update failed. Please try again." });
-    }
+    // const stockUpdate = await productModel.findByIdAndUpdate(
+    //   product.product._id,
+    //   {
+    //     stock: product.product.stock - product.quantity,
+    //   }
+    // );
+    // if (!stockUpdate) {
+    //   return res
+    //     .code(StatusCodes.PARTIAL_CONTENT)
+    //     .send({ msg: "Stock update failed. Please try again." });
+    // }
   });
   newOrder.user = user;
   newOrder.totalPayable =
@@ -123,11 +123,20 @@ const createOrder = asyncWrapper(async (req, res) => {
       purchasedUnitPrice: product.product.unitSellingPriceLow,
     };
   });
+  const prods2 = products.products.map((product) => {
+    return {
+      product: product.product._id,
+      quantity: 0,
+      totalTaxes: 0,
+      totalPrice: 0,
+      purchasedUnitPrice: product.product.unitSellingPriceLow,
+    };
+  });
   const newFulfillment = await fulfillmentModel.create({
     order: order._id,
     seller: seller._id,
     productsOrdered: prods,
-    productsSent: [],
+    productsSent: prods2,
     discount: newOrder.discount,
     coupon: newOrder.coupon,
     shippingCharge: newOrder.shippingCharge,

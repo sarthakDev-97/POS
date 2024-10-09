@@ -11,7 +11,7 @@ const getFulfillment = asyncWrapper(async (req, res) => {
       .send({ msg: "Unauthorized access." });
   }
 
-  const { sort, page, result, dateFilters, status } = req.query;
+  const { sort, page, result, dateFilters, status, search } = req.query;
   const queryObject = {};
   const sortQuery = {};
   const itemsPerPage = parseInt(result) || 5;
@@ -48,6 +48,28 @@ const getFulfillment = asyncWrapper(async (req, res) => {
         queryObject[field] = fieldFilters;
       }
     });
+  }
+  if (search) {
+    const orders = await orderModel.aggregate([
+      { $addFields: { convId: { $toString: "$_id" } } },
+      {
+        $match: {
+          convId: {
+            $regex: `^${search}`,
+            $options: "i",
+          },
+        },
+      },
+      { $project: { convId: 0 } },
+    ]);
+    console.log(orders);
+    queryObject.$or = [
+      {
+        order: orders.map((o) => {
+          o._id, console.log(o);
+        }),
+      },
+    ];
   }
 
   const skipItems = (currentPage - 1) * itemsPerPage;
@@ -134,6 +156,7 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
   }
   const { id } = req.params;
   const { status } = req.body;
+  const { productsSent } = req.body;
   const fulfillment = await fulfillmentModel.findOneAndUpdate(
     status.toLowerCase() !== "cancelled"
       ? req.user.typeofuser === "seller"
@@ -151,17 +174,15 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
       : { _id: id },
     req.body,
     {
-      new: true,
+      new: false,
       runValidators: true,
     }
   );
   if (!fulfillment) {
-    return res
-      .code(StatusCodes.PARTIAL_CONTENT)
-      .send({
-        msg: "Fulfillment not updated. Please check again.",
-        note: "Status of a cancelled order cannot be changed.",
-      });
+    return res.code(StatusCodes.PARTIAL_CONTENT).send({
+      msg: "Fulfillment not updated. Please check again.",
+      note: "Status of a cancelled order cannot be changed.",
+    });
   }
   if (status) {
     const order = await orderModel.findByIdAndUpdate(
