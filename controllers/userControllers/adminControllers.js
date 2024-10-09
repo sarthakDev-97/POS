@@ -13,7 +13,7 @@ const getAllUsers = asyncWrapper(async (req, res) => {
     //   });
     // }
 
-    const { search, page, result } = req.query;
+    const { search, page, result, type } = req.query;
     const queryObject = {};
     const itemsPerPage = parseInt(result) || 5;
     const currentPage = parseInt(page) || 1;
@@ -25,6 +25,10 @@ const getAllUsers = asyncWrapper(async (req, res) => {
         { email: { $regex: search, $options: "i" } },
         { phone: { $regex: search, $options: "i" } },
       ];
+    }
+
+    if (type) {
+      queryObject.typeofuser = type;
     }
 
     const skipItems = (currentPage - 1) * itemsPerPage;
