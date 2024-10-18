@@ -137,7 +137,7 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
                                 </div>
                         </div>
                         <div class="w-1/2 h-auto flex flex-col gap-4 text-xl">
-                                <img src="../../public/images/logo.png" alt="img here"
+                                <img src="https://pos-gxtx.onrender.com/api/v1/uploads/logo.png" alt="img here"
                                         class="w-56 mx-auto h-auto" />
                                 <div class="text-left" id="soldBy">K Market</div>
                                 <div class="text-left" id="senderAddress">Plot No. - 08, Chamunda Industrial, BIH Gujarat Truck,
