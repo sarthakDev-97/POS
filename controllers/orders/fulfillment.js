@@ -76,7 +76,7 @@ const getFulfillment = asyncWrapper(async (req, res) => {
 
   const orders = await fulfillmentModel
     .find(queryObject)
-    .where({ status: status })
+    .where(status ? { status: status } : {})
     .where(req.user.typeofuser === "seller" ? { seller: req.user._id } : {})
     .sort(sortQuery.sort)
     .limit(itemsPerPage)
@@ -92,7 +92,13 @@ const getFulfillment = asyncWrapper(async (req, res) => {
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "No orders found." });
   }
-  totalData = await fulfillmentModel.countDocuments(queryObject);
+  totalData = await fulfillmentModel.countDocuments(queryObject).where(
+    status
+      ? {
+          status: status,
+        }
+      : {}
+  );
   res.code(StatusCodes.OK).send({
     orders,
     msg: "Orders retrieved successfully.",
