@@ -3,11 +3,6 @@ const { StatusCodes } = require("http-status-codes");
 const invoiceModel = require("../../models/orders/invoice");
 
 const getAllInvoices = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser === "user") {
-    return res
-      .code(StatusCodes.PARTIAL_CONTENT)
-      .send({ msg: "Unauthorized access. Please login again." });
-  }
   const { id } = req.params;
   const invoices = await invoiceModel.find({ order: id });
   if (!invoices) {
