@@ -26,6 +26,7 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
         { path: "category", select: "name code" },
         { path: "variation", select: "type value" },
         { path: "unit", select: "shortName" },
+        { path: "tax", select: "rate" },
       ],
     })
     .populate("user", "name phone gstNumber")
@@ -68,9 +69,14 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
                                 <div class="flex flex-col justify-center items-center text-3xl font-semibold w-full">
                                         <div class="flex justify-between w-full">
                                                 <div>Invoice No.</div>
-                                                <div id="invoiceNo">${
-                                                  invoice._id
-                                                }</div>
+                                                <div id="invoiceNo">${`KM/${invoice.date
+                                                  .getFullYear()
+                                                  .toString()
+                                                  .slice(-2)}-${
+                                                  invoice.date.getMonth() + 1
+                                                }/${invoice._id
+                                                  .toString()
+                                                  .slice(-5)}`}</div>
                                         </div>
                                         <div class="flex justify-between w-full bg-cyan-700 text-white px-2 py-1">
                                                 <div>Current Due</div>
@@ -213,7 +219,9 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
                                                 ? (elem.totalTaxes / 2).toFixed(
                                                     2
                                                   ) +
-                                                  "<br/> <span class='text-sm text-gray-600'>2.5%</span>"
+                                                  `<br/> <span class='text-sm text-gray-600'>${
+                                                    elem.product.tax?.rate / 2
+                                                  }%</span>`
                                                 : ""
                                             }</td>
                                             <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 text-right">${
@@ -221,14 +229,16 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
                                                 ? (elem.totalTaxes / 2).toFixed(
                                                     2
                                                   ) +
-                                                  "<br/> <span class='text-sm text-gray-600'>2.5%</span>"
+                                                  `<br/> <span class='text-sm text-gray-600'>${
+                                                    elem.product.tax?.rate / 2
+                                                  }%</span>`
                                                 : ""
                                             }</td>
                                             <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 text-right">
                                               ${
                                                 !invoice.isLocal
                                                   ? elem.totalTaxes.toFixed(2) +
-                                                    "<br/> <span class='text-sm text-gray-600'>5%</span>"
+                                                    `<br/> <span class='text-sm text-gray-600'>${elem.product.tax?.rate}%</span>`
                                                   : ""
                                               }
                                             </td>

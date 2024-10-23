@@ -50,34 +50,38 @@ const getFulfillment = asyncWrapper(async (req, res) => {
     });
   }
   if (search) {
-    const orders = await orderModel.aggregate([
-      { $addFields: { convId: { $toString: "$_id" } } },
-      {
-        $match: {
-          convId: {
-            $regex: `^${search}`,
-            $options: "i",
-          },
-        },
-      },
-      { $project: { convId: 0 } },
-    ]);
-    console.log(orders);
-    queryObject.$or = [
-      {
-        order: orders.map((o) => {
-          o._id, console.log(o);
-        }),
-      },
-    ];
+    // const orders = await orderModel.aggregate([
+    //   { $addFields: { convId: { $toString: "$_id" } } },
+    //   {
+    //     $match: {
+    //       convId: {
+    //         $regex: `^${search}`,
+    //         $options: "i",
+    //       },
+    //     },
+    //   },
+    //   { $project: { convId: 0 } },
+    // ]);
+    // console.log(orders);
+    // queryObject.$or = [
+    //   {
+    //     order: orders.map((o) => {
+    //       o._id, console.log(o);
+    //     }),
+    //   },
+    // ];
+  }
+  if (req.user.typeofuser === "seller") {
+    queryObject.seller = req.user.userId;
+  }
+  if (status) {
+    queryObject.status = status;
   }
 
   const skipItems = (currentPage - 1) * itemsPerPage;
 
   const orders = await fulfillmentModel
     .find(queryObject)
-    .where(status ? { status: status } : {})
-    .where(req.user.typeofuser === "seller" ? { seller: req.user._id } : {})
     .sort(sortQuery.sort)
     .limit(itemsPerPage)
     .skip(skipItems)
