@@ -109,6 +109,14 @@ const shipFulfillment = asyncWrapper(async (req, res) => {
       .status(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Invoice creation failed. Please try again." });
   }
+  const orderStatus = await orderModel.findByIdAndUpdate(fulfillment.order, {
+    status: "shipped",
+  });
+  if (!orderStatus) {
+    return res
+      .status(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Order status update failed. Please try again." });
+  }
   res
     .status(StatusCodes.OK)
     .send({ fulfillment, msg: "Fulfillment shipped successfully." });
