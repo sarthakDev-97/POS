@@ -173,11 +173,11 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
         ? {
             _id: id,
             seller: req.user.userId,
-            status: "PENDING" || "SHIPPED" || "DELIVERED" || "PROCESSING",
+            status: { $in: ["PENDING", "SHIPPED", "DELIVERED", "PROCESSING"] },
           }
         : {
             _id: id,
-            status: "PENDING" || "SHIPPED" || "DELIVERED" || "PROCESSING",
+            status: { $in: ["PENDING", "SHIPPED", "DELIVERED", "PROCESSING"] },
           }
       : req.user.typeofuser === "seller"
       ? { _id: id, seller: req.user.userId }
