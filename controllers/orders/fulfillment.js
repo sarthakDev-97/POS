@@ -184,7 +184,7 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
       : { _id: id },
     req.body,
     {
-      new: false,
+      new: new,
       runValidators: true,
     }
   );
@@ -197,9 +197,9 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
   if (status) {
     const order = await orderModel.findByIdAndUpdate(
       fulfillment.order,
-      status,
+      {status: status.toLowerCase(),},
       {
-        new: false,
+        new: true,
         runValidators: true,
       }
     );
