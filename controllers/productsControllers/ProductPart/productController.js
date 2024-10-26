@@ -58,9 +58,12 @@ const getAllProducts = asyncWrapper(async (req, res) => {
 
   let products = await Product.find(queryObject)
     .select(
-      "sku name image currentStock minStock isActive unitSellingPriceLow unitSellingPriceHigh tax"
+      "sku name image currentStock minStock isActive unitSellingPriceLow unitSellingPriceHigh tax unit"
     )
-    .populate("tax", "name rate")
+    .populate([
+      { path: "unit", select: "name shortName" },
+      { path: "tax", select: "name rate" },
+    ])
     .sort(sortQuery.sort)
     .limit(itemsPerPage)
     .skip(skipItems)
