@@ -5,6 +5,7 @@ const userSchema = require("../../models/user");
 const asyncWrapper = require("../../middlewares/async");
 const productModel = require("../../models/products/product");
 const favouriteModel = require("../../models/orders/favourite");
+const notificationModel = require("../../models/notifications");
 
 const getAllOrders = asyncWrapper(async (req, res) => {
   const orders = await orderSchema
@@ -169,6 +170,31 @@ const createOrder = asyncWrapper(async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+  const createNoti = await notificationModel.insertMany([
+    {
+      user: req.user.userId,
+      title: "Order Placed",
+      description: `Order with id ${order._id} has been placed successfully.`,
+      type: "order",
+      for: "user",
+    },
+    {
+      user: seller._id,
+      title: "Order Placed",
+      description: `Received a new order with id ${order._id}.`,
+      type: "order",
+      for: "seller",
+    },
+    {
+      user: null,
+      title: "Order Placed",
+      description: `Received a new order with id ${order._id}.`,
+      type: "order",
+      for: "admin",
+    },
+  ]);
+  if (!createNoti) {
+  }
   res.code(StatusCodes.CREATED).send({
     order,
     msg: "Order created successfully",
@@ -241,6 +267,24 @@ const cancelOrder = asyncWrapper(async (req, res) => {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Stock update failed. Please try again." });
+  }
+  const notify = await notificationModel.insertMany([
+    {
+      user: null,
+      title: "Order Cancelled",
+      description: `Order with id ${order._id} has been cancelled.`,
+      type: "order",
+      for: "admin",
+    },
+    {
+      user: order.seller,
+      title: "Order Cancelled",
+      description: `Order with id ${order._id} has been cancelled.`,
+      type: "order",
+      for: "seller",
+    },
+  ]);
+  if (!notify) {
   }
   res.code(StatusCodes.OK).send({
     order,

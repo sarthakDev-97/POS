@@ -3,7 +3,7 @@ const User = require("../../models/user");
 const { StatusCodes } = require("http-status-codes");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const customErrors = require("../../errors/customError");
+const notificationModel = require("../../models/notifications");
 
 const login = asyncWrapper(async (req, res) => {
   const { username, password } = req.body;
@@ -80,6 +80,15 @@ const signup = asyncWrapper(async (req, res) => {
     return res
       .code(StatusCodes.OK)
       .send({ msg: "Signup Successful.", user: responseUser, token });
+  }
+  const notify = await notificationModel.create({
+    user: null,
+    title: "New User Registered",
+    description: `New user ${newUser.username} has registered. Please perform approval actions.`,
+    type: "registration",
+    for: "admin",
+  });
+  if (!notify) {
   }
   return res.code(StatusCodes.OK).send({
     msg: "Signup Successful. Your account has been passed for admin approval.",

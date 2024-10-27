@@ -3,6 +3,7 @@ const { StatusCodes } = require("http-status-codes");
 const asyncWrapper = require("../../middlewares/async");
 const orderModel = require("../../models/orders/order");
 const productModel = require("../../models/products/product");
+const notificationModel = require("../../models/notifications");
 
 const getFulfillment = asyncWrapper(async (req, res) => {
   if (req.user.typeofuser === "user") {
@@ -165,7 +166,7 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
       .send({ msg: "Unauthorized access." });
   }
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, seller } = req.body;
   const { productsSent } = req.body;
   const fulfillment = await fulfillmentModel.findOneAndUpdate(
     status.toLowerCase() !== "cancelled"
@@ -208,6 +209,17 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
         .code(StatusCodes.PARTIAL_CONTENT)
         .send({ msg: "Order status not updated. Please check again." });
     }
+    const notify = await notificationModel.create({
+      user: order.user,
+      title: "Order Status Updated",
+      description: `Order status has been updated to ${status.toLowerCase()} for OrderId ${
+        order._id
+      }.`,
+      type: "fulfillment",
+      for: "user",
+    });
+    if (!notify) {
+    }
     if (order.status !== "cancelled" && status.toLowerCase() === "cancelled") {
       const products = await Promise.all(
         fulfillment.productsOrdered.map((p) =>
@@ -223,6 +235,30 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
           .code(StatusCodes.PARTIAL_CONTENT)
           .send({ msg: "Stock update failed. Please try again." });
       }
+      products.forEach((p) => {
+        if (p.stock <= p.minStock) {
+          const notify = notificationModel.create({
+            user: null,
+            title: "Stock Update",
+            description: `Stock for ${p.name} with id ${p._id} has reached below ${p.minStock}.`,
+            type: "stock",
+            for: "admin",
+          });
+          if (!notify) {
+          }
+        }
+      });
+    }
+  }
+  if (seller) {
+    const notify = await notificationModel.create({
+      user: seller,
+      title: "Fulfillment Updated",
+      description: `Fulfillment has been updated for OrderId ${fulfillment.order}.`,
+      type: "fulfillment",
+      for: "seller",
+    });
+    if (!notify) {
     }
   }
   return res

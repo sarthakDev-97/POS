@@ -4,6 +4,7 @@ const fulfillmentModel = require("../../models/orders/fulfilment");
 const productModel = require("../../models/products/product");
 const invoiceModel = require("../../models/orders/invoice");
 const orderModel = require("../../models/orders/order");
+const notificationModel = require("../../models/notifications");
 
 const shipFulfillment = asyncWrapper(async (req, res) => {
   const { id } = req.params;
@@ -108,6 +109,15 @@ const shipFulfillment = asyncWrapper(async (req, res) => {
     return res
       .status(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Invoice creation failed. Please try again." });
+  }
+  const notify = await notificationModel.create({
+    user: user.user,
+    title: "Invoice Generated",
+    description: `Invoice has been generated for Shipped products for OrderId ${fulfillment.order}.`,
+    type: "invoice",
+    for: "user",
+  });
+  if (!notify) {
   }
   const orderStatus = await orderModel.findByIdAndUpdate(fulfillment.order, {
     status: "shipped",
