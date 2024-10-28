@@ -240,7 +240,7 @@ const updateFulfillment = asyncWrapper(async (req, res) => {
           const notify = notificationModel.create({
             user: null,
             title: "Stock Update",
-            description: `Stock for ${p.name} with id ${p._id} has reached below ${p.minStock}.`,
+            description: `Stock for ${p.name} with sku ${p.sku} has reached below ${p.minStock}.`,
             type: "stock",
             for: "admin",
           });
