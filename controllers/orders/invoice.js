@@ -50,6 +50,7 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
         <meta name="viewport" content="width=1224">
         <title>Invoice</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <meta http-equiv="cache-control" content="max-age=604800, public">
         <style>
                 * {
                         -webkit-print-color-adjust: exact !important;
@@ -69,14 +70,9 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
                                 <div class="flex flex-col justify-center items-center text-3xl font-semibold w-full">
                                         <div class="flex justify-between w-full">
                                                 <div>Invoice No.</div>
-                                                <div id="invoiceNo">${`KM/${invoice.date
-                                                  .getFullYear()
-                                                  .toString()
-                                                  .slice(-2)}-${
-                                                  invoice.date.getMonth() + 1
-                                                }/${invoice._id
-                                                  .toString()
-                                                  .slice(-5)}`}</div>
+                                                <div id="invoiceNo">${
+                                                  invoice?.invoiceNumber
+                                                }</div>
                                         </div>
                                         <div class="flex justify-between w-full bg-cyan-700 text-white px-2 py-1">
                                                 <div>Current Due</div>

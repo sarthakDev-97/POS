@@ -34,19 +34,18 @@ const getFulfillment = asyncWrapper(async (req, res) => {
     let filters = dateFilters.replace(regEx, (match) => `_${opMap[match]}_`);
 
     const options = ["createdAt"];
-    filters = filters.split(",").forEach((item) => {
-      const [field, op, value, op2, value2] = item.split("_");
+    filters.split(",").forEach((item) => {
+      const [field, op, value] = item.split("_");
 
       if (options.includes(field)) {
         const fieldFilters = {
           [op]: field === "createdAt" ? new Date(value) : Number(value),
         };
-
-        if (op2 && value2) {
-          fieldFilters[op2] =
-            field === "createdAt" ? new Date(value2) : Number(value2);
+        if (queryObject[field] !== undefined) {
+          queryObject[field] = { ...queryObject[field], ...fieldFilters };
+        } else {
+          queryObject[field] = fieldFilters;
         }
-        queryObject[field] = fieldFilters;
       }
     });
   }

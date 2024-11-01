@@ -1,10 +1,29 @@
 const mongoose = require("mongoose");
+const { parse } = require("path");
+
+const getCurrentFiscalYear = () => {
+  const now = new Date();
+  const year = now.getFullYear().toString().slice(-2);
+  const month = now.getMonth() + 1;
+  if (month >= 4) {
+    return `${year}-${parseInt(year) + 1}`;
+  } else {
+    return `${parseInt(year) - 1}-${year}`;
+  }
+};
 
 const invoiceSchema = new mongoose.Schema({
   order: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Order",
     required: true,
+  },
+  invoiceNumber: {
+    type: String,
+    default: `KM/${getCurrentFiscalYear()}/${Math.floor(
+      Math.random() * 1000000
+    )}`,
+    unique: true,
   },
   seller: {
     type: mongoose.Schema.Types.ObjectId,
