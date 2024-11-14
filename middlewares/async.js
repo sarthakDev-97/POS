@@ -15,23 +15,23 @@ const asyncWrapper = (fn) => {
           const validationErrors = await Object.values(error.errors).map(
             (err) => ({ msg: err.message })
           );
-          return res.code(StatusCodes.PARTIAL_CONTENT).send({
+          return res.status(StatusCodes.PARTIAL_CONTENT).send({
             errors: validationErrors,
             msg: `Validation Error. ${validationErrors[0].msg}`,
           });
         }
         if (error.keyValue?.phone) {
           return res
-            .code(StatusCodes.PARTIAL_CONTENT)
+            .status(StatusCodes.PARTIAL_CONTENT)
             .send({ msg: "Account with this phone number already exists." });
         }
         if (error.name === "MongoServerError") {
           return res
-            .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
+            .status(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
             .send({ msg: `${error.errorResponse?.errmsg}` });
         }
         res
-          .code(StatusCodes.INTERNAL_SERVER_ERROR)
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send({ msg: "Internal Server Error" });
       }
     }
