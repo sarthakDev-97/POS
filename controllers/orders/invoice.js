@@ -503,9 +503,9 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
                                 Bank Name: <span id="bankName">ICICI Bank, Adajan Branch, Surat</span>
                                 <br> Account Holder's Name: <span id="bankName">K Market</span>
                                 <br>
-                                Account Number: <span id="accountNumber">1234567890</span>
+                                Account Number: <span id="accountNumber">183705001722</span>
                                 <br>
-                                IFSC Code: <span id="ifscCode">KMCB1234567</span>
+                                IFSC Code: <span id="ifscCode">ICIC0001837</span>
                         </div>
                 </div>
                 <!-- T&C Part -->
