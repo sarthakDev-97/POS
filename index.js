@@ -73,7 +73,7 @@ if (cluster.isPrimary) {
   app.register(bannerRoutes, { prefix: "/api/v1/banner" }); //done on APIDOG
   app.register(invoiceRoutes, { prefix: "/api/v1/invoice" }); //done on APIDOG
   app.register(notifyRoutes, { prefix: "/api/v1/notifications" }); //done on APIDOG
-  app.register(reportRoutes, { prefix: "/api/v1/reports" });
+  app.register(reportRoutes, { prefix: "/api/v1/reports" }); //done on APIDOG
 
   app.setNotFoundHandler(notFound);
   app.setErrorHandler(errHandler);
