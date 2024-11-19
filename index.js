@@ -7,6 +7,7 @@ const fulfillRoutes = require("./routes/orders/fulfillment");
 
 if (cluster.isPrimary) {
   const cpuNum = require("node:os").cpus().length;
+  console.log(cpuNum);
 
   for (let i = 0; i < cpuNum; i++) {
     cluster.fork();
@@ -80,10 +81,10 @@ if (cluster.isPrimary) {
 
   const start = async () => {
     try {
-      await connectDB(process.env.CONSTR2);
-      await app.listen({
-        port: process.env.PORT || 3000,
-        host: process.env.HOST ? `${process.env.HOST}` : "localhost",
+      await connectDB(process.env.CONSTR3);
+      app.listen({
+        port: process.env.PORT || 4000,
+        host: process.env.HOST || "localhost",
       });
       console.log(
         `Server listening on ${app.server.address().address}:${
