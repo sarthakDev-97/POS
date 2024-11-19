@@ -12,7 +12,7 @@ if (cluster.isPrimary) {
   for (let i = 0; i < cpuNum; i++) {
     cluster.fork();
   }
-  cluster.on("exit", (worker, code, signal) => {
+  cluster.on("exit", (worker) => {
     console.log(`worker ${worker.process.pid} died`);
     cluster.fork();
   });
@@ -50,7 +50,7 @@ if (cluster.isPrimary) {
   app.register(resizeMiddleware, { prefix: "/api/v1/uploads" });
   app.register(uploadFunc, { prefix: "/api/v1/files" });
 
-  app.get("/", (req, res) => {
+  app.get("/", (res) => {
     console.log(`hello from server ${process.pid}`);
     res.send(`hello from server ${process.pid}`);
   });
@@ -83,15 +83,17 @@ if (cluster.isPrimary) {
     try {
       await connectDB(process.env.CONSTR3);
       app.listen({
-        port: process.env.PORT || 4000,
+        port: process.env.PORT || 3000,
         host: process.env.HOST || "localhost",
       });
-      console.log(
-        `Server listening on ${app.server.address().address}:${
-          app.server.address().port
-        } at process ${process.pid}`
-      );
+      app.server.on("listening", () => {
+        const address = app.server.address();
+        console.log(
+          `Server listening on ${address.address}:${address.port} at process ${process.pid}`
+        );
+      });
     } catch (err) {
+      console.log(err);
       app.log.error(err);
     }
   };
