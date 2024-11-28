@@ -8,7 +8,7 @@ const productModel = require("../models/products/product");
 
 const deleteJob = () => {
   cron.schedule(
-    "* * * * *",
+    "33 4 * * 6",
     async () => {
       try {
         const banners = await bannerModel.find();
