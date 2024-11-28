@@ -28,8 +28,9 @@ const deleteJob = () => {
         );
         console.log(unusedFiles);
 
-        unusedFiles.forEach((file) => {
-          fs.unlinkSync(publicFolder, file);
+        unusedFiles.forEach(async (file) => {
+          const filePath = path.join(__dirname, "../public/images", file);
+          fs.unlinkSync(filePath);
           console.log(`Deleted ${file}`);
         });
       } catch (error) {
