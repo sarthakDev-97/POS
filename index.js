@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cronJob = require("./jobs/deleteFiles");
 
 const fastify = require("fastify");
 const app = fastify();
@@ -19,7 +20,6 @@ if (cluster.isPrimary) {
 } else {
   const connectDB = require("./db/connection");
   const { uploadFunc, multer } = require("./routes/fileUpload");
-  // const cronJob = require("./controllers/cronDelete");
   const notFound = require("./middlewares/notFound");
   const errHandler = require("./middlewares/errHandler");
   const resizeMiddleware = require("./middlewares/resizeImage");
@@ -100,3 +100,5 @@ if (cluster.isPrimary) {
 
   start();
 }
+
+cronJob();

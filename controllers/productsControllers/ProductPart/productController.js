@@ -217,7 +217,7 @@ const deleteProduct = asyncWrapper(async (req, res) => {
 });
 
 const addMultipleProducts = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser !== "admin" || req.user.typeofuser !== "seller") {
+  if (req.user.typeofuser !== "admin" && req.user.typeofuser !== "seller") {
     return res
       .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
       .send({ msg: "You are not authorized to perform this action." });
