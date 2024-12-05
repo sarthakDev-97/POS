@@ -1,6 +1,8 @@
 const asyncWrapper = require("../../middlewares/async");
 const { StatusCodes } = require("http-status-codes");
 const invoiceModel = require("../../models/orders/invoice");
+const productModel = require("../../models/products/product");
+const fulfillmentModel = require("../../models/orders/fulfilment");
 
 const getAllInvoices = asyncWrapper(async (req, res) => {
   const { id } = req.params;
@@ -580,7 +582,47 @@ const getInvoiceDataById = asyncWrapper(async (req, res) => {
   return res.code(StatusCodes.OK).send({ invoice });
 });
 
-const deleteInvoice = asyncWrapper(async (req, res) => {});
+const deleteInvoice = asyncWrapper(async (req, res) => {
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Unauthorized access. Please login again." });
+  }
+  const { id } = req.params;
+  const invoice = await invoiceModel.findById(id);
+  if (!invoice) {
+    return res
+      .code(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Invoice not found. Please check again." });
+  }
+  invoice.products.forEach(async (element) => {
+    const product = await productModel.findById(element.product);
+    product.stock += element.quantity;
+
+    const fulfillment = await fulfillmentModel
+      .findOne({
+        order: invoice.order,
+      })
+      .populate({
+        path: "productsSent.product",
+        select: "tax",
+        populate: { path: "tax", select: "rate" },
+      });
+    for (const p of fulfillment.productsSent) {
+      if (p.product._id.toString() === element.product.toString()) {
+        p.quantity -= element.quantity;
+        p.totalTaxes -= element.totalTaxes;
+        p.totalPrice -= element.purchasedUnitPrice * element.quantity;
+      }
+    }
+    await product.save();
+    await fulfillment.save();
+  });
+  await invoiceModel.findByIdAndDelete(id).lean();
+  return res
+    .code(StatusCodes.OK)
+    .send({ msg: "Invoice deleted successfully." });
+});
 
 module.exports = {
   getInvoiceDataById,
