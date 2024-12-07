@@ -1,5 +1,6 @@
 require("dotenv").config();
 const cronJob = require("./jobs/deleteFiles");
+const cronJob2 = require("./jobs/deleteNotifications");
 
 const fastify = require("fastify");
 const app = fastify();
@@ -99,6 +100,6 @@ if (cluster.isPrimary) {
   };
 
   start();
+  cronJob();
+  cronJob2();
 }
-
-cronJob();

@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
 const cron = require("node-cron");
 const fs = require("fs");
 const path = require("path");
 
 const bannerModel = require("../models/banner");
 const productModel = require("../models/products/product");
+const variationModel = require("../models/products/variation");
 
 const deleteJob = () => {
   cron.schedule(
@@ -17,7 +17,10 @@ const deleteJob = () => {
         const products = await productModel.find({ image: { $ne: [] } });
         const productFiles = products.flatMap((product) => product.image);
 
-        const allFiles = [...bannerFiles, ...productFiles];
+        const variations = await variationModel.find({ image: { $ne: null } });
+        const variationFiles = variations.map((variation) => variation.image);
+
+        const allFiles = [...bannerFiles, ...productFiles, ...variationFiles];
         // console.log(allFiles);
 
         const publicFolder = path.join(__dirname, "../public/images");
