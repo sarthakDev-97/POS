@@ -202,14 +202,26 @@ const createOrder = asyncWrapper(async (req, res) => {
 });
 
 const updateOrder = asyncWrapper(async (req, res) => {
-  const order = await orderSchema.findOneAndUpdate(
-    { _id: req.params.id, user: req.user.userId },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  var order;
+  if (req.user.typeofuser === "admin") {
+    order = await orderSchema.findOneAndUpdate(
+      { _id: req.params.id },
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+  } else {
+    order = await orderSchema.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.userId },
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+  }
   if (!order) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
