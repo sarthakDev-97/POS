@@ -3,7 +3,7 @@ const asyncWrapper = require("../../middlewares/async");
 const variationModel = require("../../models/products/variation");
 
 const getAllVariation = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser !== "admin") {
+  if (req.user.typeofuser === "user") {
     return res
       .status(StatusCodes.UNAUTHORIZED)
       .send({ msg: "Unauthorized access. Please login again." });
@@ -16,7 +16,7 @@ const getAllVariation = asyncWrapper(async (req, res) => {
 });
 
 const getVariationById = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser !== "admin") {
+  if (req.user.typeofuser === "user") {
     return res
       .code(StatusCodes.UNAUTHORIZED)
       .send({ msg: "Unauthorized access. Please login again." });
@@ -89,7 +89,7 @@ const deleteVariation = asyncWrapper(async (req, res) => {
 });
 
 const getVariationByIdReal = asyncWrapper(async (req, res) => {
-  if (req.user.typeofuser !== "admin") {
+  if (req.user.typeofuser === "user") {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
       .send({ msg: "Unauthorized access. Please login again." });

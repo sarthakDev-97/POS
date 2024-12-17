@@ -6,12 +6,10 @@ const Tax = require("../../../models/products/tax");
 const Brand = require("../../../models/products/brand");
 const Category = require("../../../models/products/category");
 const Subcategory = require("../../../models/products/subcategory");
-const myCache = require("../../../middlewares/caching");
 const Variation = require("../../../models/products/variation");
 
 const productComponents = asyncWrapper(async (req, res) => {
   const data = req.data;
-  let newUpdatedData = [];
   if (!data) {
     return res
       .code(StatusCodes.PARTIAL_CONTENT)
@@ -53,20 +51,6 @@ const productComponents = asyncWrapper(async (req, res) => {
       }
     });
   }
-
-  // for (let item of categorySet.values()) {
-  //   let category1 = await Category.findOne({
-  //     name: new RegExp(`^${item}$`, "i"),
-  //   });
-  //   if (!category1) {
-  //     category1 = await Category.create({ name: item });
-  //   }
-  //   data.map((element) => {
-  //     if (element.category.trim() === item) {
-  //       element.category = category1._id.toString();
-  //     }
-  //   });
-  // }
 
   for (let item of cateSubSet.values()) {
     let category1 = await Category.findOne({
@@ -162,11 +146,6 @@ const productComponents = asyncWrapper(async (req, res) => {
     }
     item.sku = sku1;
   }
-
-  // Helper function to introduce a delay
-
-  // return res.code(StatusCodes.OK).send({ newData });
-
   try {
     const products = await Product.insertMany(data, { ordered: false });
 
