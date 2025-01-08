@@ -23,9 +23,10 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
     .findById(id)
     .populate({
       path: "products.product",
-      select: "name variation sku category unit",
+      select: "name variation sku category subcategory unit",
       populate: [
         { path: "category", select: "name code" },
+        { path: "subcategory", select: "name code" },
         { path: "variation", select: "type value" },
         { path: "unit", select: "shortName" },
         { path: "tax", select: "rate" },
@@ -188,7 +189,12 @@ const getInvoiceById = asyncWrapper(async (req, res) => {
                                               ${elem.product?.sku}
                                             </td>
                                             <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 text-center">
-                                              ${elem.product?.category?.code}
+                                              ${
+                                                elem.product?.subcategory
+                                                  ?.code ||
+                                                elem.product?.category?.code ||
+                                                "000"
+                                              }
                                             </td>
                                             <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 text-center">
                                               ${
