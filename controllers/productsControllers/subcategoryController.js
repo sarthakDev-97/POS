@@ -110,10 +110,26 @@ const deleteSubcategory = asyncWrapper(async (req, res) => {
     .send({ msg: "Subcategory deleted successfully." });
 });
 
+const getAll = asyncWrapper(async (req, res) => {
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .code(StatusCodes.NON_AUTHORITATIVE_INFORMATION)
+      .send({ msg: "You are not authorized to perform this action." });
+  }
+  const subcategories = await Subcategory.find()
+    .select("-__v")
+    .sort({ name: 1 })
+    .lean();
+  return res
+    .code(StatusCodes.OK)
+    .send({ subcategories, msg: "Subcategories retrieved successfully." });
+});
+
 module.exports = {
   getSubcategory,
   addSubcategory,
   updateSubcategory,
   deleteSubcategory,
   getAllSubcategory,
+  getAll,
 };

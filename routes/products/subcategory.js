@@ -4,11 +4,13 @@ const {
   deleteSubcategory,
   addSubcategory,
   getAllSubcategory,
+  getAll,
 } = require("../../controllers/productsControllers/subcategoryController");
 const authMiddleware = require("../../middlewares/authMiddleware");
 
 const subcategoryRoutes = (fastify, _, done) => {
   fastify.get("/:id", { preHandler: authMiddleware }, getSubcategory);
+  fastify.get("/getAll", { preHandler: authMiddleware }, getAll);
   fastify.get("/getAll/:id", { preHandler: authMiddleware }, getAllSubcategory);
   fastify.post("/", { preHandler: authMiddleware }, addSubcategory);
   fastify.patch("/:id", { preHandler: authMiddleware }, updateSubcategory);
