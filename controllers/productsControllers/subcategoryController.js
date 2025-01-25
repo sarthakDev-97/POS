@@ -117,6 +117,7 @@ const getAll = asyncWrapper(async (req, res) => {
       .send({ msg: "You are not authorized to perform this action." });
   }
   const subcategories = await Subcategory.find()
+    .populate("category", "name code")
     .select("-__v")
     .sort({ name: 1 })
     .lean();
