@@ -10,7 +10,6 @@ const subcategorySchema = new mongoose.Schema(
     },
     code: {
       type: Number,
-      unique: true,
       default: function () {
         return Math.ceil(Math.random() * 10000);
       },
