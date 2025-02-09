@@ -51,11 +51,11 @@ const getFinanceGraph = asyncHandler(async (req, res) => {
 });
 
 const downloadReport = asyncHandler(async (req, res) => {
-  // if (req.user.typeofuser !== "admin") {
-  //   return res
-  //     .status(StatusCodes.PARTIAL_CONTENT)
-  //     .send({ msg: "Unauthorized access. Please login again." });
-  // }
+  if (req.user.typeofuser !== "admin") {
+    return res
+      .status(StatusCodes.PARTIAL_CONTENT)
+      .send({ msg: "Unauthorized access. Please login again." });
+  }
   const financeGraph = await financialGraph(req, res);
   const saleGraph = await salesGraph(req, res);
   const productPerformance = await productPerformanceReport(req, res);
