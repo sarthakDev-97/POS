@@ -60,24 +60,38 @@ const downloadReport = asyncHandler(async (req, res) => {
   const saleGraph = await salesGraph(req, res);
   const productPerformance = await productPerformanceReport(req, res);
 
-  path.join(__dirname, "./", "report.csv");
   const file = fs.createWriteStream(path.join(__dirname, "./", "report.csv"));
   file.write("Financial Graph\n");
+  console.log(financeGraph);
   file.write(Object.keys(financeGraph[0]).join(","));
   financeGraph.forEach((elem) => {
     console.log(elem);
-    file.write(`\n${Object.values(elem).join(",")}\n`);
+    file.write(`\n${Object.values(elem).join(",")}`);
   });
+  file.write("\n");
+  file.write("\n");
+  file.write("\n");
   file.write("\nSales Graph\n");
-  file.write(saleGraph);
-  file.write("\nProduct Performance\n");
-  file.write(productPerformance);
-  file.end();
-  res.download(path.join(__dirname, "./", "report.csv"), (err) => {
-    if (err) {
-      console.log(err);
-    }
+  file.write(Object.keys(saleGraph[0]).join(","));
+  saleGraph.forEach((elem) => {
+    console.log(elem);
+    file.write(`\n${Object.values(elem).join(",")}`);
   });
+
+  file.write("\n");
+  file.write("\n");
+  file.write("\n");
+  file.write("\nProduct Performance\n");
+  file.write(Object.keys(productPerformance[0]).join(","));
+  productPerformance.forEach((elem) => {
+    console.log(elem);
+    file.write(`\n${Object.values(elem).join(",").replaceAll("\n", " ")}`);
+  });
+  file.end();
+  const stream = fs.readFileSync(path.join(__dirname, "./", "report.csv"));
+  res
+    .header("Content-disposition", "attachment; filename=report.csv")
+    .send(stream);
 });
 
 module.exports = { getReports, getSalesGraph, getFinanceGraph, downloadReport };
